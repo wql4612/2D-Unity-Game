@@ -22,10 +22,7 @@ public class EnermyCollider : MonoBehaviour
         if (player!= null)
         {
             Debug.Log("Player entered enermy collider");
-            PlayerController.PlayerState.inAir = true;
-            PlayerController.PlayerState.vSpeed = 0f;
-            PlayerController.PlayerState.hSpeed = 0f;
-            PlayerController.rb.rotation = 90f;
+            PlayerController.Hurt();
         }
     }
 }

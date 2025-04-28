@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MapCollisper : MonoBehaviour
+public class FloorCollisper : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()
@@ -17,13 +17,21 @@ public class MapCollisper : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log("Map Collider Trigger Entered");
         PlayerController player = other.GetComponent<PlayerController>();
         if (player!= null)
         {
-            Debug.Log("Player entered map collider");
+            Debug.Log("Player enter floor collider");
             PlayerController.PlayerState.inAir = false;
             PlayerController.PlayerState.vSpeed = 0f;
+        }
+    }
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        PlayerController player = other.GetComponent<PlayerController>();
+        if (player!= null)
+        {
+            Debug.Log("Player exit floor collider");
+            PlayerController.PlayerState.inAir = true;
         }
     }
 }
