@@ -6,8 +6,11 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     //常量
-    public const float gravity = 15f;
-    public const friction = 10f;
+    public const float gravity = 10f;
+    public const float friction = 10f;
+    //系统属性 
+    public static Rigidbody2D rb;
+    public static CapsuleCollider2D cc;
     public class InputKeys
     {
     //定义输入的按键
@@ -19,18 +22,21 @@ public class PlayerController : MonoBehaviour
     public class PlayerState
     {
         //角色自身属性
-        public static float hMAxSpeed = 8f;
+        public static float hMaxSpeed = 8f;
         public static float hAcceleration = 25f;
         public static float hFriction = 10f;
-        public static float vAcceleration = 10f;
+        public static float vAcceleration = 5f;
         //角色变动属性
-        public static bool faceLeft = false;
+        public static bool faceLeft = false;//角色朝向，true表示向左，false表示向右
+        public static bool inAir= true;//角色是否在空中
         public static float hSpeed = 0f;//水平速度，正值表示向左，负值表示向右
         public static float vSpeed = 0f;//垂直速度，正值表示向上，负值表示向下
     }
     // Start is called before the first frame update
     void Start()
     {
+        rb = GetComponent<Rigidbody2D>();
+        cc = GetComponent<CapsuleCollider2D>();
         Application.targetFrameRate = 60;//设置帧率
     }
 
@@ -42,21 +48,25 @@ public class PlayerController : MonoBehaviour
         else if(Input.GetKey(InputKeys.Left))
         {
             PlayerState.faceLeft = true;
-            if(PlayerState.hSpeed > -PlayerState.hMAxSpeed){
+            if(PlayerState.hSpeed > -PlayerState.hMaxSpeed){
                 PlayerState.hSpeed -= PlayerState.hAcceleration * Time.deltaTime;
             }
         }
         else if(Input.GetKey(InputKeys.Right))
         {
             PlayerState.faceLeft = false;
-            if(PlayerState.hSpeed < PlayerState.hMAxSpeed){
+            if(PlayerState.hSpeed < PlayerState.hMaxSpeed){
                 PlayerState.hSpeed += PlayerState.hAcceleration * Time.deltaTime;
             }
         }
         //垂直输入处理
         if(Input.GetKeyDown(InputKeys.Jump))
         {
-            PlayerState.vSpeed = PlayerState.vAcceleration;
+            if(!PlayerState.inAir)
+            {
+                PlayerState.vSpeed = PlayerState.vAcceleration;
+                PlayerState.inAir = true;
+            }
         }
         if(Input.GetKey(InputKeys.Squat))
         {
@@ -67,10 +77,11 @@ public class PlayerController : MonoBehaviour
         }
         //环境影响处理
         //重力
-        PlayerState.vSpeed -= gravity * Time.deltaTime;
-        //摩擦
-        if(PlayerState.vSpeed == 0)//角色在地面上时才判定有摩檫力
+        if(PlayerState.inAir)
         {
+            PlayerState.vSpeed -= gravity * Time.deltaTime;
+        }
+        //摩擦
             if(PlayerState.hSpeed > 0)
             {
                 if(PlayerState.hSpeed > friction * Time.deltaTime)
@@ -93,29 +104,19 @@ public class PlayerController : MonoBehaviour
                     PlayerState.hSpeed = 0f;
                 }
             }
-        }
 
         //角色运动计算
-        Vector2 vector2 = transform.position;//获取角色位置
-        vector2.x += PlayerState.hSpeed * Time.deltaTime;
-        vector2.y += PlayerState.vSpeed * Time.deltaTime;
-        //角色位置限制
-        if(vector2.x < -10f){
-            vector2.x = -10f;
-            PlayerState.hSpeed = 0f;
+        Vector2 move = new Vector2(PlayerState.hSpeed, PlayerState.vSpeed);
+        rb.velocity = move;
+        //角色朝向设置
+        if(PlayerState.faceLeft)
+        {
+            transform.localScale = new Vector3(-1, 1, 1);
         }
-        if(vector2.x > 10f){
-            vector2.x = 10f;
-            PlayerState.hSpeed = 0f;
+        else
+        {
+            transform.localScale = new Vector3(1, 1, 1);
         }
-        if(vector2.y < -5f){
-            vector2.y = -5f;
-            PlayerState.vSpeed = 0f;
-        }
-        if(vector2.y > 5f){
-            vector2.y = 5f;
-            PlayerState.vSpeed = 0f;
-        }
-        transform.position = vector2;//设置角色位置
     }
+
 }
