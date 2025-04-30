@@ -34,9 +34,8 @@ public class PlayerController : MonoBehaviour
         public static bool isAlive = true;//角色是否存活
         public static bool faceLeft = false;//角色朝向，true表示向左，false表示向右
         public static bool inAir= true;//角色是否在空中
-        public static bool onLeftWall = false;//角色是否在墙壁上
-        public static bool onRightWall = false;//角色是否在墙壁上
-        public static float hSpeed = 0f;//水平速度，负值表示向左，正值表示向右
+        public static bool onWall = false;//角色是否在墙壁上
+        public static float hSpeed = 0f;//水平速度，正值表示向左，负值表示向右
         public static float vSpeed = 0f;//垂直速度，正值表示向上，负值表示向下
         public static int health = maxHealth;//角色生命值
     }
@@ -57,24 +56,18 @@ public class PlayerController : MonoBehaviour
         }else{
             //水平输入处理
             if(Input.GetKey(InputKeys.Left) && Input.GetKey(InputKeys.Right)){}
-            else if(Input.GetKey(InputKeys.Left) && PlayerState.onLeftWall == false)
+            else if(Input.GetKey(InputKeys.Left))
             {
                 PlayerState.faceLeft = true;
                 if(PlayerState.hSpeed > -PlayerState.hMaxSpeed){
                     PlayerState.hSpeed -= PlayerState.hAcceleration * Time.deltaTime;
-                }else
-                {
-                    PlayerState.hSpeed = -PlayerState.hMaxSpeed;
                 }
             }
-            else if(Input.GetKey(InputKeys.Right) && PlayerState.onRightWall == false)
+            else if(Input.GetKey(InputKeys.Right))
             {
                 PlayerState.faceLeft = false;
                 if(PlayerState.hSpeed < PlayerState.hMaxSpeed){
                     PlayerState.hSpeed += PlayerState.hAcceleration * Time.deltaTime;
-                }else
-                {
-                    PlayerState.hSpeed = PlayerState.hMaxSpeed;
                 }
             }
             //垂直输入处理
@@ -84,17 +77,18 @@ public class PlayerController : MonoBehaviour
                 {
                     PlayerState.vSpeed = PlayerState.vAcceleration;
                 }
-                else if(PlayerState.onLeftWall)
+                else if(PlayerState.onWall)
                 {
                     PlayerState.vSpeed = PlayerState.vAcceleration;
-                    PlayerState.hSpeed = PlayerState.hMaxSpeed;
-                    PlayerState.faceLeft = false;
-                }
-                else if(PlayerState.onRightWall)
-                {
-                    PlayerState.vSpeed = PlayerState.vAcceleration;
-                    PlayerState.hSpeed = -PlayerState.hMaxSpeed;
-                    PlayerState.faceLeft = true;
+                    if(PlayerState.faceLeft)
+                    {
+                        PlayerState.hSpeed = -PlayerState.hMaxSpeed;
+                        PlayerState.faceLeft = false;
+                    }else
+                    {
+                        PlayerState.hSpeed = PlayerState.hMaxSpeed;
+                        PlayerState.faceLeft = true;
+                    }
                 }
             }
             if(Input.GetKey(InputKeys.Squat))
