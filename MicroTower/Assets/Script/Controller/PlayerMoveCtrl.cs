@@ -262,14 +262,13 @@ namespace MicroTower
             
             if(isClimbing)
             {
-                float verticalInput = Input.GetAxis("Vertical");
                 // 向上爬 - 正向播放动画
-                if (verticalInput > 0.1f)
+                if (Input.GetKey(KeyCode.W))
                 {
                     animator.SetInteger(climbSpeedParam, 1); // 使用 SetInteger 方法
                 }
                 // 向下爬 - 反向播放动画
-                else if (verticalInput < -0.1f)
+                else if (Input.GetKey(KeyCode.S))
                 {
                     animator.SetInteger(climbSpeedParam, -1); // 使用 SetInteger 方法
                 }
