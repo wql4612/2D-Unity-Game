@@ -11,7 +11,7 @@ namespace MicroTower
         [SerializeField] private Transform characterSkin;
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float jumpForce = 5f;
-        [SerializeField] private float wallSlideSpeed = 2f; // 新增：墙壁滑落速度
+        [SerializeField] private float wallSlideSpeed = 3f; // 新增：墙壁滑落速度
         [SerializeField] private float climbSpeed = 3f; // 爬墙速度
         
         [Header("Gravity Settings")]
@@ -25,7 +25,7 @@ namespace MicroTower
         [SerializeField] private Transform rightCheck;
         [SerializeField] private Transform ceilingCheck;
         [SerializeField] private float checkRadius = 0.2f;
-        [SerializeField] private float wallCheckDistance = 0.15f; // 新增：墙壁检测距离
+        [SerializeField] private float wallCheckDistance = 0.1f; // 新增：墙壁检测距离
         
         [Header("Layer Masks")]
         [SerializeField] private LayerMask blockLayer; // 更名：Ground -> Block
@@ -56,6 +56,20 @@ namespace MicroTower
         {
             rb = GetComponent<Rigidbody2D>();
             rb.isKinematic = true;
+            GameObject skin = transform.Find("Skin").gameObject;
+            if (skin != null)
+            {
+                characterSkin = skin.transform;
+                if (characterSkin == null)
+                {
+                    Debug.LogError("Character skin not found!");
+                }
+                animator = skin.GetComponent<Animator>();
+                if (animator == null)
+                {
+                    Debug.LogError("Animator not found!");
+                }
+            }
             
             // 初始化所有检测点
             InitializeCheckPoint(ref groundCheck, "GroundCheck", Vector3.down * 1);
@@ -198,11 +212,11 @@ namespace MicroTower
                     isClimbingRightWall = true;
                 }
             }
-            // 墙壁滑动效果(只在非攀爬状态下生效)
-            if((isTouchingLeftWall || isTouchingRightWall) && !isGrounded && velocity.y < 0 && !(isClimbingLeftWall || isClimbingRightWall))
-            {
-                velocity.y = -wallSlideSpeed;
-            }
+            // // 墙壁滑动效果(只在非攀爬状态下生效)
+            // if((isTouchingLeftWall || isTouchingRightWall) && !isGrounded && velocity.y < 0 && !(isClimbingLeftWall || isClimbingRightWall))
+            // {
+            //     velocity.y = -wallSlideSpeed;
+            // }
             
             // 自定义重力系统(只在非攀爬状态下生效)
             if (!isGrounded && !(isClimbingLeftWall || isClimbingRightWall))
@@ -220,7 +234,7 @@ namespace MicroTower
                     velocity += Physics2D.gravity * gravityScale * Time.fixedDeltaTime;
                 }
             }
-            else if (velocity.y < 0) // 地面接触
+            else if (velocity.y < 0 && isGrounded) // 地面接触
             {
                 velocity.y = 0;
             }
@@ -254,7 +268,7 @@ namespace MicroTower
         private void UpdateAnimationState()
         {
             // 设置行走动画参数
-            isWalking = isGrounded && Mathf.Abs(velocity.x) > 0.5f;
+            isWalking = isGrounded && Mathf.Abs(velocity.x) > 0.01f;
             animator.SetBool(walkAnimParam, isWalking);
             // 设置爬墙动画参数
             bool isClimbing = isClimbingLeftWall || isClimbingRightWall;

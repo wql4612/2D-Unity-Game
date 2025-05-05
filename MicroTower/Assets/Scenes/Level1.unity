@@ -519,10 +519,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f45f54527ffff3742b26260c5f114e16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterSkin: {fileID: 165411937}
+  characterSkin: {fileID: 0}
   moveSpeed: 5
   jumpForce: 5
-  wallSlideSpeed: 2
+  wallSlideSpeed: 3
   climbSpeed: 3
   gravityScale: 1
   fallMultiplier: 2.5
@@ -532,7 +532,7 @@ MonoBehaviour:
   rightCheck: {fileID: 231846022}
   ceilingCheck: {fileID: 1912215186}
   checkRadius: 0.2
-  wallCheckDistance: 0.15
+  wallCheckDistance: 0.1
   blockLayer:
     serializedVersion: 2
     m_Bits: 0
@@ -549,7 +549,7 @@ MonoBehaviour:
   velocity: {x: 0, y: 0}
   horizontalInputDisableTimer: 0
   moveInput: 0
-  animator: {fileID: 0}
+  animator: {fileID: 165411939}
   walkAnimParam: IsWalking
   climbAnimParam: IsClimbing
   climbSpeedParam: ClimbSpeed
@@ -1164,7 +1164,7 @@ Tilemap:
       m_TileObjectToInstantiateIndex: 65535
       dummyAlignment: 0
       m_AllTileFlags: 1073741825
-  - first: {x: -3, y: 0, z: 0}
+  - first: {x: -1, y: 0, z: 0}
     second:
       serializedVersion: 2
       m_TileIndex: 6
