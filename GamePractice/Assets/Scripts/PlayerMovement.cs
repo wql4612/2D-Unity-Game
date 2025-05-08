@@ -13,7 +13,7 @@ public class PlayerMovement : MonoBehaviour
 
     private float dirX = 0f;
     [SerializeField] private float moveSpeed = 7f;
-    [SerializeField] private float jumpForce = 7f;
+    [SerializeField] private float jumpForce = 8f;
 
     private enum MovementState { idle,running,jumping,falling};  
 
@@ -24,6 +24,7 @@ public class PlayerMovement : MonoBehaviour
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
         coll = GetComponent<BoxCollider2D>();
+        rb.gravityScale = 2f;
     }
 
     // Update is called once per frame
@@ -38,6 +39,15 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
+        if(Input.GetButton("Jump") && !IsGrounded())
+        {
+            rb.gravityScale = 1f;
+        }
+        if (Input.GetButtonUp("Jump") || rb.velocity.y < 0.1f || IsGrounded())
+        {
+            rb.gravityScale = 2f;
+        }
+
 
         UpdateAnimationState();
     }
