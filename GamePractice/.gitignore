@@ -1,0 +1,82 @@
+# Unity生成的文件
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Mm]emoryCaptures/
+
+# Unity项目设置
+/ProjectSettings/ProjectVersion.txt
+/ProjectSettings/UnityConnectSettings.asset
+
+# 自动生成的VS/MD解决方案和项目文件
+ExportedObj/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+
+# Unity3D生成的meta文件
+*.meta
+
+# Unity3D临时文件
+*.apk
+*.unitypackage
+*.aab
+
+# 资源文件
+*.asset
+*.prefab
+*.mat
+*.anim
+*.controller
+*.physicMaterial
+*.physicsMaterial2D
+
+# 图片缓存
+*.gif
+*.png
+*.jpg
+*.jpeg
+*.bmp
+*.tga
+*.psd
+*.exr
+
+# 音频文件
+*.wav
+*.mp3
+*.ogg
+*.aif
+
+# 视频文件
+*.mov
+*.mp4
+*.webm
+
+# 用户特定文件
+[Dd]esktop.ini
+
+# 插件目录
+/[Aa]ssets/AssetStoreTools*
+/[Aa]ssets/Plugins*
+
+# 编辑器临时文件
+*.orig
+*.bak
+
+# 其他需要忽略的文件
+.vs/
+.vscode/
+.idea/
+.DS_Store
