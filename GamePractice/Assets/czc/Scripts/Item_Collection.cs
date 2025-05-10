@@ -21,8 +21,9 @@ public class Item_Collection : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.gameObject.CompareTag("Cherry"))
+        if(collision.gameObject.CompareTag("Cherry")||collision.gameObject.CompareTag("Banana"))
         {
+            Debug.Log("Item collected");
             Destroy(collision.gameObject);
             cherries++;
             cherriesText.text = "Cherries:" + cherries;

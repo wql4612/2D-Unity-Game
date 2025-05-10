@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Cherry
   - Trap
+  - Banana
+  - RedBird
+  - YellowBird
+  - BlueBird
   layers:
   - Default
   - TransparentFX
