@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    private Rigidbody2D rb;
+    public Rigidbody2D rb;
     private SpriteRenderer sprite;
     private Animator anim;
     private BoxCollider2D coll;
@@ -30,11 +30,11 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        //×óÓÒÒÆ¶¯
+        //å·¦å³ç§»åŠ¨
         dirX = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
 
-        //ÌøÔ¾
+        //è·³è·ƒ
         if(Input.GetButtonDown("Jump") && IsGrounded())
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
@@ -57,9 +57,9 @@ public class PlayerMovement : MonoBehaviour
         MovementState state;
         if (dirX > 0f)
         {
-            //ÅĞ¶ÏidleºÍrun×´Ì¬×ª»»
+            //åˆ¤æ–­idleå’ŒrunçŠ¶æ€è½¬æ¢
             state = MovementState.running;
-            //·­×ª»­²¼
+            //ç¿»è½¬ç”»å¸ƒ
             sprite.flipX = false;
         }
         else if (dirX < 0f)
@@ -84,7 +84,7 @@ public class PlayerMovement : MonoBehaviour
         anim.SetInteger("state", (int)state);
 
     }
-    //ÅĞ¶Ï½ÇÉ«ÊÇ·ñÔÚµØÃæÉÏ£¬¸¨ÖúÌøÔ¾Ìõ¼şÅĞ¶Ï
+    //åˆ¤æ–­è§’è‰²æ˜¯å¦åœ¨åœ°é¢ä¸Šï¼Œè¾…åŠ©è·³è·ƒæ¡ä»¶åˆ¤æ–­
     private bool IsGrounded()
     {
         return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, jumpableGround);
