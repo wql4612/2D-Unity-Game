@@ -8,13 +8,13 @@ public class TrampolineTrigger : MonoBehaviour
     [SerializeField] private  bool isTriggered = false;
 
     [Header("Animation Settings")]
-    [SerializeField] private Animator TrampolineAnimator;
+    [SerializeField] private Animator trampolineAnimator;
     [SerializeField] private string activeAnimParam = "IsActive";
     // Start is called before the first frame update
     void Start()
     {
-        TrampolineAnimator = GetComponent<Animator>();
-        if (TrampolineAnimator == null)
+        trampolineAnimator = GetComponent<Animator>();
+        if (trampolineAnimator == null)
         {
             Debug.LogError("Animator not found!");
         }
@@ -30,11 +30,11 @@ public class TrampolineTrigger : MonoBehaviour
     {
         if(isTriggered)
         {
-            TrampolineAnimator.SetBool(activeAnimParam, true);
+            trampolineAnimator.SetBool(activeAnimParam, true);
         }
         else
         {
-            TrampolineAnimator.SetBool(activeAnimParam, false);
+            trampolineAnimator.SetBool(activeAnimParam, false);
         }
     }
     private void OnTriggerEnter2D(Collider2D collision)
