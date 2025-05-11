@@ -47,8 +47,6 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.gravityScale = 2f;
         }
-
-
         UpdateAnimationState();
     }
 
