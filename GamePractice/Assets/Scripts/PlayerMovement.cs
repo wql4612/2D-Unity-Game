@@ -4,19 +4,27 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    private Rigidbody2D rb;
+    public Rigidbody2D rb;
     private SpriteRenderer sprite;
     private Animator anim;
     private BoxCollider2D coll;
-
-    [SerializeField] private LayerMask jumpableGround;
-
     private float dirX = 0f;
+    private bool jumpRequested;
+    private bool isJumping;
+    private enum MovementState { idle, running, jumping, falling };
+
+    //climb ladder
+    private float vertical = 0f;
+    private bool isLadder;
+    private bool isClimbing;
+
     [SerializeField] private float moveSpeed = 7f;
     [SerializeField] private float jumpForce = 8f;
-
-    private enum MovementState { idle,running,jumping,falling};  
-
+    [SerializeField] private AudioSource jumpSound;
+    [SerializeField] private float lowJumpGravity = 1f;
+    [SerializeField] private float fallGravity = 2f;
+    [SerializeField] private LayerMask jumpableGround;  
+   
     // Start is called before the first frame update
     private void Start()
     {
@@ -24,7 +32,28 @@ public class PlayerMovement : MonoBehaviour
         sprite = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
         coll = GetComponent<BoxCollider2D>();
-        rb.gravityScale = 2f;
+        rb.gravityScale = fallGravity;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Ladder"))
+        {
+            isLadder = true;
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Ladder"))
+        {
+            isLadder = false;
+            isClimbing = false;
+            if(!jumpRequested)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, 0f);
+            }
+        }
     }
 
     // Update is called once per frame
@@ -32,24 +61,84 @@ public class PlayerMovement : MonoBehaviour
     {
         //◊Û”““∆∂Ø
         dirX = Input.GetAxisRaw("Horizontal");
-        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
+        //≈¿Ã›◊”
+        vertical = Input.GetAxisRaw("Vertical");
+
 
         //Ã¯‘æ
-        if(Input.GetButtonDown("Jump") && IsGrounded())
+        if(Input.GetButtonDown("Jump") && (IsGrounded()||isClimbing))
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            jumpRequested = true;
         }
-        if(Input.GetButton("Jump") && !IsGrounded())
-        {
-            rb.gravityScale = 1f;
-        }
-        if (Input.GetButtonUp("Jump") || rb.velocity.y < 0.1f || IsGrounded())
-        {
-            rb.gravityScale = 2f;
-        }
-
 
         UpdateAnimationState();
+
+        //≈¿Ã›◊”
+        if (isLadder && Mathf.Abs(vertical) > 0f)
+        {
+            isClimbing = true;
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        HandleMovement();
+        HandleJump();
+        HandleClimbing();
+        ApplyGravity();
+    }
+    
+    private void HandleMovement()
+    {
+        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
+    }
+
+    private void HandleJump()
+    {
+        if (jumpRequested)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            jumpSound.Play();
+
+            if (isClimbing)
+            {
+                isClimbing = false; // Õ—¿Î≈¿Ã›◊¥Ã¨
+                rb.gravityScale = fallGravity;
+            }
+
+            jumpRequested = false;
+            isJumping = true;
+        }
+    }
+
+    private void HandleClimbing()
+    {
+        if (isClimbing)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, vertical * moveSpeed);
+        }
+    }
+
+    private void ApplyGravity()
+    {
+        if (isClimbing)
+        {
+            rb.gravityScale = 0;
+            return;
+        }
+
+        if (rb.velocity.y < 0) // œ¬¬‰◊¥Ã¨
+        {
+            rb.gravityScale = fallGravity;
+        }
+        else if (rb.velocity.y > 0 && !Input.GetButton("Jump")) // ∂Ã∞¥Ã¯‘æ
+        {
+            rb.gravityScale = fallGravity;
+        }
+        else // ≥§∞¥Ã¯‘æ
+        {
+            rb.gravityScale = lowJumpGravity;
+        }
     }
 
     private void UpdateAnimationState()
@@ -89,4 +178,5 @@ public class PlayerMovement : MonoBehaviour
     {
         return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, jumpableGround);
     }
+
 }

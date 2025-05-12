@@ -2,11 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static AllControl;
 
 public class PlayerLife : MonoBehaviour
 {
     private Rigidbody2D rb;
     private Animator anim;
+    [SerializeField] private AudioSource deathSound;
     // Start is called before the first frame update
     private void Start()
     {
@@ -24,7 +26,9 @@ public class PlayerLife : MonoBehaviour
     {
         if(collision.gameObject.CompareTag("Trap"))
         {
+            deathSound.Play();
             Die();
+            GameManager.Instance.score = 0;
         }
     }
 

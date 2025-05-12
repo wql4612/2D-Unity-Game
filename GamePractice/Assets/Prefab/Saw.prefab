@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 144793125602467860}
   - component: {fileID: 2583464065588167260}
   - component: {fileID: 3317195705260309182}
-  - component: {fileID: 6854783017536594188}
+  - component: {fileID: 6441945888053647636}
   m_Layer: 0
   m_Name: Saw
   m_TagString: Trap
@@ -99,8 +99,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 2
---- !u!61 &6854783017536594188
-BoxCollider2D:
+--- !u!58 &6441945888053647636
+CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -132,15 +132,5 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.38, y: 0.38}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.38, y: 0.38}
-  m_EdgeRadius: 0
+  m_Radius: 0.19
