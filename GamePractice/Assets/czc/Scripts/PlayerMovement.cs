@@ -11,9 +11,11 @@ public class PlayerController : MonoBehaviour
     private Animator anim;
     private BoxCollider2D coll;
     private LineRenderer lineRenderer;
+
     [Header("Physics Materials")]
     [SerializeField] private PhysicsMaterial2D noFrictionMat;
     [SerializeField] private PhysicsMaterial2D normalMat;
+
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 7f;
     [SerializeField] private float jumpForce = 8f;
@@ -22,6 +24,9 @@ public class PlayerController : MonoBehaviour
     [Header("Slingshot Settings")]
     [SerializeField] private float forceMultiplier = 10f;
     [SerializeField] private float maxDragDistance = 3f;
+
+    // 鸟类库存数组：0-red(cherry), 1-yellow(banana), 2-blue(kiwi), 3-bomb(orange)
+    private int[] birdInventory = new int[4];
 
     private Vector2 dragStartPos;
     private float dirX = 0f;
@@ -43,40 +48,38 @@ public class PlayerController : MonoBehaviour
         lineRenderer.endWidth = 0.05f;
         rb.gravityScale = 2f;
     }
-private void Update()
-{
-    HandleSlingshotInput();
 
-    // 如果在瞄准，先停住一切逻辑
-    if (isAiming)
+    private void Update()
     {
-        UpdateAnimationState();
-        return;
-    }
+        HandleSlingshotInput();
 
-    // 如果处于飞行状态，完全交给物理系统
-    if (isInSlingshotFlight)
-    {
-        if (IsGrounded())
+        if (isAiming)
         {
-            isInSlingshotFlight = false; // 落地才结束
+            UpdateAnimationState();
+            return;
         }
 
-        UpdateAnimationState(); // 动画不落下
-        return; // 不再执行下面的移动逻辑
-    }
+        if (isInSlingshotFlight)
+        {
+            if (IsGrounded())
+            {
+                isInSlingshotFlight = false;
+            }
 
-    // 普通状态才处理移动与跳跃
-    HandleMovementInput();
-    HandleJump();
-    UpdateAnimationState();
-}
+            HandleBirdSkills(); // 在飞行时监听技能
+            UpdateAnimationState();
+            return;
+        }
+
+        HandleMovementInput();
+        HandleJump();
+        UpdateAnimationState();
+    }
 
     private void HandleMovementInput()
     {
         dirX = Input.GetAxisRaw("Horizontal");
 
-        // 只有不处于弹弓飞行状态时，才控制 X 移动
         if (!isInSlingshotFlight)
         {
             rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
@@ -101,8 +104,10 @@ private void Update()
 
     private void HandleSlingshotInput()
     {
-        if (Input.GetKeyDown(KeyCode.J) && !isAiming && !isInSlingshotFlight)
+        // 必须有红鸟库存才能进入弹弓模式
+        if (Input.GetKeyDown(KeyCode.J) && !isAiming && !isInSlingshotFlight && birdInventory[0] > 0)
         {
+            birdInventory[0]--; // 消耗红鸟
             EnterSlingshotMode();
         }
 
@@ -129,6 +134,33 @@ private void Update()
         }
     }
 
+    private void HandleBirdSkills()
+    {
+        // 黄鸟技能（加速）绑定K
+        if (Input.GetKeyDown(KeyCode.K) && birdInventory[1] > 0)
+        {
+            birdInventory[1]--;
+            Debug.Log("黄鸟技能触发：加速");
+            // 后续实现
+        }
+
+        // 蓝鸟技能（分裂）绑定L
+        if (Input.GetKeyDown(KeyCode.L) && birdInventory[2] > 0)
+        {
+            birdInventory[2]--;
+            Debug.Log("蓝鸟技能触发：分裂");
+            // 后续实现
+        }
+
+        // 炸弹技能（爆炸+上弹）绑定O
+        if (Input.GetKeyDown(KeyCode.O) && birdInventory[3] > 0)
+        {
+            birdInventory[3]--;
+            Debug.Log("炸弹技能触发：爆炸反弹");
+            // 后续实现
+        }
+    }
+
     private void EnterSlingshotMode()
     {
         Time.timeScale = 0f;
@@ -145,7 +177,7 @@ private void Update()
         isInSlingshotFlight = true;
         rb.isKinematic = false;
         rb.AddForce(force, ForceMode2D.Impulse);
-        rb.AddTorque(-force.x * 0.05f, ForceMode2D.Impulse); // 加一点旋转
+        rb.AddTorque(-force.x * 0.05f, ForceMode2D.Impulse);
         lineRenderer.positionCount = 0;
     }
 
@@ -202,5 +234,17 @@ private void Update()
     private bool IsGrounded()
     {
         return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, jumpableGround);
+    }
+
+    // 提供公共接口给 Item_Collection 添加数量
+    public void AddItem(string tag)
+    {
+        switch (tag)
+        {
+            case "Cherry": birdInventory[0]++; break;
+            case "Banana": birdInventory[1]++; birdInventory[0]++; break;
+            case "Kiwi": birdInventory[2]++; birdInventory[0]++; break;
+            case "Orange": birdInventory[3]++; birdInventory[0]++; break;
+        }
     }
 }

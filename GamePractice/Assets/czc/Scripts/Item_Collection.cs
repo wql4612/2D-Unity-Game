@@ -1,32 +1,54 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Item_Collection : MonoBehaviour
 {
-    private int cherries = 0;
-    [SerializeField] private Text cherriesText;
-    // Start is called before the first frame update
+    private int[] itemCounts = new int[4]; // 0: Cherry, 1: Banana, 2: Kiwi, 3: Orange
+
+    [SerializeField] private TextMeshProUGUI itemText;
+
+    private PlayerController playerController;
+
     void Start()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        playerController = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
+        UpdateItemText();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.gameObject.CompareTag("Cherry")||collision.gameObject.CompareTag("Banana"))
+        if (collision.gameObject.CompareTag("Cherry"))
         {
-            Debug.Log("Item collected");
+            itemCounts[0]++;
+            playerController.AddItem("Cherry");
             Destroy(collision.gameObject);
-            cherries++;
-            cherriesText.text = "Cherries:" + cherries;
         }
+        else if (collision.gameObject.CompareTag("Banana"))
+        {
+            itemCounts[1]++;
+            playerController.AddItem("Banana");
+            Destroy(collision.gameObject);
+        }
+        else if (collision.gameObject.CompareTag("Kiwi"))
+        {
+            itemCounts[2]++;
+            playerController.AddItem("Kiwi");
+            Destroy(collision.gameObject);
+        }
+        else if (collision.gameObject.CompareTag("Orange"))
+        {
+            itemCounts[3]++;
+            playerController.AddItem("Orange");
+            Destroy(collision.gameObject);
+        }
+
+        UpdateItemText();
+    }
+
+    private void UpdateItemText()
+    {
+        itemText.text = $"Cherry: {itemCounts[0]} | Banana: {itemCounts[1]} | Kiwi: {itemCounts[2]} | Orange: {itemCounts[3]}";
     }
 }

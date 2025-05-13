@@ -7,9 +7,8 @@ TagManager:
   - Cherry
   - Trap
   - Banana
-  - RedBird
-  - YellowBird
-  - BlueBird
+  - Kiwi
+  - Orange
   layers:
   - Default
   - TransparentFX
