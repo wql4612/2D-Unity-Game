@@ -505,7 +505,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3146355550669110325, guid: 11eedb6f4c2aca944925fa35fac1316b, type: 3}
       propertyPath: m_Name
-      value: CheckPoint
+      value: FinisPoint
       objectReference: {fileID: 0}
     - target: {fileID: 5528728430353387656, guid: 11eedb6f4c2aca944925fa35fac1316b, type: 3}
       propertyPath: m_LocalPosition.x
