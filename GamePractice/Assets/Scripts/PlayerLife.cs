@@ -32,7 +32,9 @@ public class PlayerLife : MonoBehaviour
         {
             deathSound.Play();
             Die();
-            GameManager.Instance.score = 0;
+            GameManager.Instance.cherries = 0;
+            GameManager.Instance.strawberries = 0;
+            GameManager.Instance.apples = 0;
         }
     }
 

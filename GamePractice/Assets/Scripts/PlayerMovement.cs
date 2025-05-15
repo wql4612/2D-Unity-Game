@@ -9,8 +9,9 @@ public class PlayerMovement : MonoBehaviour
     private Animator anim;
     private BoxCollider2D coll;
     private float dirX = 0f;
-    private bool jumpRequested;
+    public bool jumpRequested;
     private bool isJumping;
+    [SerializeField] public bool canJump = true;
     private enum MovementState { idle, running, jumping, falling };
 
     //climb ladder
@@ -66,7 +67,7 @@ public class PlayerMovement : MonoBehaviour
 
 
         //跳跃
-        if(Input.GetButtonDown("Jump") && (IsGrounded()||isClimbing))
+        if(Input.GetButtonDown("Jump") && (IsGrounded()||isClimbing)&&canJump)
         {
             jumpRequested = true;
         }
@@ -137,7 +138,18 @@ public class PlayerMovement : MonoBehaviour
         }
         else // 长按跳跃
         {
-            rb.gravityScale = lowJumpGravity;
+            if(canJump)
+            {
+                rb.gravityScale = lowJumpGravity;
+            }
+            else
+            {
+                rb.gravityScale = fallGravity; // 禁用跳跃时强制使用下落重力
+            }
+        }
+        if(IsGrounded())
+        {
+            canJump = true;
         }
     }
 

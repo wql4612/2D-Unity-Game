@@ -8,6 +8,8 @@ TagManager:
   - Trap
   - Ladder
   - CheckPoint
+  - Strawberry
+  - Apple
   layers:
   - Default
   - TransparentFX

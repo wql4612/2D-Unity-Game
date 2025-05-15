@@ -31,6 +31,9 @@ public class AllControl : MonoBehaviour
             }
         }
 
-        public int score = 0;
+        public int cherries = 0;
+        public int strawberries = 0;
+        public int apples = 0;
+
     }
 }
