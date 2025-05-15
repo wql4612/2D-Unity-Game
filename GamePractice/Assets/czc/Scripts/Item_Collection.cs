@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -8,6 +7,7 @@ public class Item_Collection : MonoBehaviour
     private int[] itemCounts = new int[4]; // 0: Cherry, 1: Banana, 2: Kiwi, 3: Orange
 
     [SerializeField] private TextMeshProUGUI itemText;
+    [SerializeField] private Sprite placeholderSprite;  // 占位贴图
 
     private PlayerController playerController;
 
@@ -19,32 +19,58 @@ public class Item_Collection : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Cherry"))
+        Debug.Log($"Item collected: {collision.gameObject.name}");
+        if (collision.CompareTag("Cherry"))
         {
-            itemCounts[0]++;
-            playerController.AddItem("Cherry");
-            Destroy(collision.gameObject);
+            CollectItem(collision.gameObject, 0, "Cherry");
         }
-        else if (collision.gameObject.CompareTag("Banana"))
+        else if (collision.CompareTag("Banana"))
         {
-            itemCounts[1]++;
-            playerController.AddItem("Banana");
-            Destroy(collision.gameObject);
+            CollectItem(collision.gameObject, 1, "Banana");
         }
-        else if (collision.gameObject.CompareTag("Kiwi"))
+        else if (collision.CompareTag("Kiwi"))
         {
-            itemCounts[2]++;
-            playerController.AddItem("Kiwi");
-            Destroy(collision.gameObject);
+            CollectItem(collision.gameObject, 2, "Kiwi");
         }
-        else if (collision.gameObject.CompareTag("Orange"))
+        else if (collision.CompareTag("Orange"))
         {
-            itemCounts[3]++;
-            playerController.AddItem("Orange");
-            Destroy(collision.gameObject);
+            CollectItem(collision.gameObject, 3, "Orange");
         }
+    }
 
+    private void CollectItem(GameObject item, int index, string itemName)
+    {
+        itemCounts[index]++;
+        playerController.AddItem(itemName);
         UpdateItemText();
+
+        StartCoroutine(HandleItemRespawn(item, 10f));
+    }
+
+    private IEnumerator HandleItemRespawn(GameObject item, float delay)
+    {
+        Collider2D col = item.GetComponent<Collider2D>();
+        SpriteRenderer sr = item.GetComponent<SpriteRenderer>();
+        Animator animator = item.GetComponent<Animator>();
+
+        if (sr == null || placeholderSprite == null)
+            yield break;
+
+        // 保存原始状态
+        Sprite originalSprite = sr.sprite;
+        bool animatorWasEnabled = animator != null && animator.enabled;
+
+        // 禁用动画，设置占位图，关闭碰撞体
+        if (animator != null) animator.enabled = false;
+        sr.sprite = placeholderSprite;
+        if (col != null) col.enabled = false;
+
+        yield return new WaitForSeconds(delay);
+
+        // 恢复动画，贴图，碰撞体
+        sr.sprite = originalSprite;
+        if (animator != null) animator.enabled = animatorWasEnabled;
+        if (col != null) col.enabled = true;
     }
 
     private void UpdateItemText()
