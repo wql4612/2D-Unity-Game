@@ -38,12 +38,13 @@ public class PlayerMovement : MonoBehaviour
         if(Input.GetButtonDown("Jump") && IsGrounded())
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            rb.gravityScale = 1f;
         }
         if(Input.GetButton("Jump") && !IsGrounded())
         {
             rb.gravityScale = 1f;
         }
-        if (Input.GetButtonUp("Jump") || rb.velocity.y < 0.1f || IsGrounded())
+        if (Input.GetButtonUp("Jump") || rb.velocity.y < 0.1f)
         {
             rb.gravityScale = 2f;
         }

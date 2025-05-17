@@ -1,4 +1,0 @@
-repository "GamePractice@tj_wechat_os_qy00_s2xsslqk1naq_1pzhygg@cloud.cn"
-  path "/"
-    br "/main"
-    co "/main"

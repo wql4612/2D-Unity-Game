@@ -30,6 +30,7 @@ public class DashArrow : MonoBehaviour
     }
     void LateUpdate()
     {
+        originalGraviyScale = playerRB.gravityScale;
         if(Input.GetKey(KeyCode.K) )
         {
             if(isDashing)

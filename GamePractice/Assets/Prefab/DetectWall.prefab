@@ -96,8 +96,8 @@ GameObject:
   - component: {fileID: 5700519289662670945}
   - component: {fileID: 5231750780387709706}
   - component: {fileID: 1103579518138804786}
-  m_Layer: 0
-  m_Name: Square
+  m_Layer: 6
+  m_Name: moveObj
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -238,6 +238,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4307447820878698404}
   - component: {fileID: 8416789627273718936}
+  - component: {fileID: 7084205083451281425}
   m_Layer: 0
   m_Name: DetectWall
   m_TagString: Untagged
@@ -278,10 +279,22 @@ MonoBehaviour:
   square: {fileID: 5109473033956187731}
   key: 108
   textMesh: {fileID: 8668258456879312469}
-  beginPos: {fileID: 0}
-  endPos: {fileID: 0}
+--- !u!114 &7084205083451281425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5743203996725013575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6dece77a7bb2944885cc5e2c7d37f32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  beginPos: {fileID: 5939624706915392286}
+  endPos: {fileID: 2773243592258392316}
+  moveObj: {fileID: 5109473033956187731}
   moveTrigger: {fileID: 0}
-  isMoving: 0
   speed: 0
 --- !u!1 &7500043531080648459
 GameObject:
@@ -294,7 +307,7 @@ GameObject:
   - component: {fileID: 4702598828504005476}
   - component: {fileID: 5978936609607403872}
   - component: {fileID: 8668258456879312469}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

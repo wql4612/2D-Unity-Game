@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TrampolineTrigger : MonoBehaviour
 {
-    [SerializeField] private float TrampolineForce = 15f;
+    [SerializeField] private float TrampolineForce = 10f;
     [SerializeField] private  bool isTriggered = false;
 
     [Header("Animation Settings")]

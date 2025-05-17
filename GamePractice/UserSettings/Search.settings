@@ -9,7 +9,7 @@ onBoardingDoNotAskAgain = true
 showPackageIndexes = false
 showStatusBar = false
 scopes = {
-	"last_search.66F56946" = "package manager"
+	"last_search.66F56946" = "manager"
 	"OpenInspectorPreview.66F56946" = "0"
 	"currentGroup.66F56946" = "all"
 }
@@ -63,9 +63,13 @@ providers = {
 objectSelectors = {
 }
 recentSearches = [
+	"maangter"
+	"version"
+	"control"
+	"vision"
+	"packa"
 	"packagermanager"
 	"version manager"
-	"version"
 ]
 searchItemFavorites = [
 ]
