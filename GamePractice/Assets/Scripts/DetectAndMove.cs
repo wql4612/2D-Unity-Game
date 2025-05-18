@@ -13,7 +13,7 @@ public class DetectAndMove : MonoBehaviour
     [SerializeField] private Transform endPos;
     [SerializeField] private GameObject moveObj;
     [SerializeField] private BoxCollider2D moveTrigger;
-    
+    [SerializeField] private string detectTag = "Player";
     [SerializeField] private float speed = 5f;
     private bool isMoving = false;
     private Vector3 targetPosition;
@@ -58,7 +58,7 @@ public class DetectAndMove : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.name == "Player" && !isMoving)
+        if (other.CompareTag(detectTag) && !isMoving)
         {
             StartMovement();
         }

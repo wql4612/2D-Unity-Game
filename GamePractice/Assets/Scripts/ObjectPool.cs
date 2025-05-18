@@ -12,10 +12,12 @@ public class ObjectPool : MonoBehaviour
         public string tag;
         public GameObject prefab;
         public int initialSize;
+        public int maxSize; // 新增最大数量
     }
 
     public List<Pool> pools;
     private Dictionary<string, Queue<GameObject>> poolDictionary;
+    private Dictionary<string, int> poolCount; // 当前池中对象总数
 
     private void Awake()
     {
@@ -27,6 +29,7 @@ public class ObjectPool : MonoBehaviour
     private void InitializePool()
     {
         poolDictionary = new Dictionary<string, Queue<GameObject>>();
+        poolCount = new Dictionary<string, int>();
 
         foreach (Pool pool in pools)
         {
@@ -40,6 +43,7 @@ public class ObjectPool : MonoBehaviour
             }
 
             poolDictionary.Add(pool.tag, objectPool);
+            poolCount.Add(pool.tag, pool.initialSize);
         }
     }
 
@@ -52,12 +56,23 @@ public class ObjectPool : MonoBehaviour
             return null;
         }
 
-        // 如果池空了则新建对象
+        Pool poolConfig = pools.Find(p => p.tag == tag);
+
+        // 如果池空了且未超过最大数量，则新建对象
         if (poolDictionary[tag].Count == 0)
         {
-            GameObject newObj = Instantiate(pools.Find(p => p.tag == tag).prefab);
-            newObj.SetActive(false);
-            poolDictionary[tag].Enqueue(newObj);
+            if (poolCount[tag] < poolConfig.maxSize)
+            {
+                GameObject newObj = Instantiate(poolConfig.prefab);
+                newObj.SetActive(false);
+                poolDictionary[tag].Enqueue(newObj);
+                poolCount[tag]++;
+            }
+            else
+            {
+                Debug.LogWarning($"Pool with tag {tag} has reached max size!");
+                return null;
+            }
         }
 
         GameObject obj = poolDictionary[tag].Dequeue();
@@ -83,6 +98,7 @@ public class ObjectPool : MonoBehaviour
 
         obj.SetActive(false);
         poolDictionary[tag].Enqueue(obj);
+        // poolCount 不变，因为对象没有被销毁
     }
 }
 // 接口定义

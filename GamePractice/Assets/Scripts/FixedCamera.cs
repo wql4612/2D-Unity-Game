@@ -7,6 +7,8 @@ public class FixedCamera : MonoBehaviour
     [SerializeField] private float target_x;
     [SerializeField] private float target_y;
     [SerializeField] private float scale_change_to = 5;
+    [SerializeField] private bool fixX = true;
+    [SerializeField] private bool fixY = true;
     private float old_scale;
     private CameraFollow camera_follow;
     
@@ -26,15 +28,22 @@ public class FixedCamera : MonoBehaviour
     {
         if (other.tag != "Player")
             return;
-        camera_follow.ToggleFollowPlayer(false);
-        camera_follow.SetFixedPosition(new Vector3(target_x, target_y, 0));
+        camera_follow.ToggleFollowPlayerX(!fixX); // true=跟随，false=锁定
+        camera_follow.ToggleFollowPlayerY(!fixY);
+
+        Vector3 camPos = camera_follow.transform.position;
+        float x = fixX ? target_x : camPos.x;
+        float y = fixY ? target_y : camPos.y;
+        camera_follow.SetFixedPosition(new Vector3(x, y, camPos.z));
         camera_follow.GetComponent<Camera>().orthographicSize = scale_change_to;
     }
+
     void OnTriggerExit2D(Collider2D other)
     {
         if (other.tag != "Player")
             return;
-        camera_follow.ToggleFollowPlayer(true);
+        camera_follow.ToggleFollowPlayerX(true);
+        camera_follow.ToggleFollowPlayerY(true);
         camera_follow.GetComponent<Camera>().orthographicSize = old_scale;
     }
 }

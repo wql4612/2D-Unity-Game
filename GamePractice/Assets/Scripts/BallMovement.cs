@@ -4,9 +4,22 @@ using UnityEngine;
 
 public class BallMovement : MonoBehaviour
 {
-   [Header("Movement Settings")]
+    public enum InitialDirection
+    {
+        Up,
+        Down,
+        Left,
+        Right,
+        Custom
+    }
+
+    [Header("Movement Settings")]
     [SerializeField] private float speed = 5f; // 固定速度大小
     [SerializeField] private float lifeTime = 10f; // 存在时间
+    [Header("Velocity Settings")]
+    [SerializeField] private bool useRandomVelocity = true;
+    [SerializeField] private InitialDirection initialDirection = InitialDirection.Up;
+    [SerializeField] private Vector2 customDirection = Vector2.right;
 
     private Rigidbody2D rb;
     private float activeTime;
@@ -21,7 +34,14 @@ public class BallMovement : MonoBehaviour
     public void OnSpawn()
     {
         activeTime = 0f;
-        SetRandomDirection();
+        if (useRandomVelocity)
+        {
+            SetRandomDirection();
+        }
+        else
+        {
+            SetInitialDirection();
+        }
         ApplyVelocity();
         StartCoroutine(AutoRecycleCoroutine());
     }
@@ -43,6 +63,29 @@ public class BallMovement : MonoBehaviour
         ).normalized;
     }
 
+    // 设置指定方向
+    private void SetInitialDirection()
+    {
+        switch (initialDirection)
+        {
+            case InitialDirection.Up:
+                currentDirection = Vector2.up;
+                break;
+            case InitialDirection.Down:
+                currentDirection = Vector2.down;
+                break;
+            case InitialDirection.Left:
+                currentDirection = Vector2.left;
+                break;
+            case InitialDirection.Right:
+                currentDirection = Vector2.right;
+                break;
+            case InitialDirection.Custom:
+                currentDirection = customDirection.normalized;
+                break;
+        }
+    }
+
     // 应用速度
     private void ApplyVelocity()
     {
@@ -54,17 +97,5 @@ public class BallMovement : MonoBehaviour
     {
         yield return new WaitForSeconds(lifeTime);
         ObjectPool.Instance.ReturnToPool("Ball", gameObject);
-    }
-
-    // 碰撞处理
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        // if (collision.gameObject.CompareTag("Ground"))
-        // {
-        //     // 使用物理引擎的反射计算
-        //     Vector2 normal = collision.contacts[0].normal;
-        //     currentDirection = Vector2.Reflect(currentDirection, normal).normalized;
-        //     ApplyVelocity();
-        // }
     }
 }

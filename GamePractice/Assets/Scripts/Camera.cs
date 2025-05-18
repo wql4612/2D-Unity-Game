@@ -6,7 +6,8 @@ public class CameraFollow : MonoBehaviour
 {
     [SerializeField] private Transform player;
     [SerializeField] private Vector3 fixedPosition;
-    [SerializeField] private bool followPlayer = true;
+    [SerializeField] private bool followPlayer_x = true;
+    [SerializeField] private bool followPlayer_y = true;
     [SerializeField] private float smoothTime = 0.2f; 
 
     private Vector3 currentVelocity; 
@@ -18,19 +19,17 @@ public class CameraFollow : MonoBehaviour
 
     private void LateUpdate()
     {
-        Vector3 targetPosition;
+        Vector3 targetPosition = transform.position;
 
-        if (followPlayer)
+        if (player != null)
         {
+            // 分别判断x/y轴是否跟随
+            float targetX = followPlayer_x ? player.position.x : fixedPosition.x;
+            float targetY = followPlayer_y ? player.position.y : fixedPosition.y;
+            float targetZ = transform.position.z;
 
-            targetPosition = new Vector3(player.position.x, player.position.y, transform.position.z);
+            targetPosition = new Vector3(targetX, targetY, targetZ);
         }
-        else
-        {
-
-            targetPosition = fixedPosition;
-        }
-
 
         transform.position = Vector3.SmoothDamp(
             transform.position,
@@ -40,15 +39,19 @@ public class CameraFollow : MonoBehaviour
         );
     }
 
-    public void ToggleFollowPlayer(bool follow)
+    public void ToggleFollowPlayerX(bool follow)
     {
-        followPlayer = follow;
+        followPlayer_x = follow;
+    }
+    public void ToggleFollowPlayerY(bool follow)
+    {
+        followPlayer_y = follow;
     }
 
     public void SetFixedPosition(Vector3 position)
     {
         Debug.Log("Setting fixed position to " + position);
-        fixedPosition= new Vector3(position.x, position.y, transform.position.z);
+        fixedPosition = new Vector3(position.x, position.y, transform.position.z);
         Debug.Log("Fixed position set to " + fixedPosition);
     }
 }

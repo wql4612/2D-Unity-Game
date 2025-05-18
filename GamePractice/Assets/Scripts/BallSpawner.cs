@@ -42,6 +42,11 @@ public class BallSpawner : MonoBehaviour
         );
 
         GameObject ball = ObjectPool.Instance.GetFromPool("Ball", spawnPos, Quaternion.identity);
+        if (ball == null)//先检测对象池是否已满
+        {
+            Debug.LogWarning("Ball pool is empty or reached max size, cannot spawn new ball.");
+            return;
+        }
         spawnedBalls.Add(ball);
 
         // 给球一个随机速度

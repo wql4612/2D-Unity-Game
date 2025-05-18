@@ -36,11 +36,20 @@ public class DetectWall : MonoBehaviour
     }
     private void ToggleWallCollider(bool state)
     {
+        //取消碰撞体
         var collider = square.GetComponent<BoxCollider2D>();
         if (collider)
         {
             collider.enabled = state;
             Debug.Log($"Wall {(state ? "enabled" : "disabled")}!");
+        }
+        // 修改透明度
+        var sr = square.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            Color c = sr.color;
+            c.a = state ? 1f : 0.5f;
+            sr.color = c;
         }
     }
 }

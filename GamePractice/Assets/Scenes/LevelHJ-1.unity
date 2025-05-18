@@ -214,6 +214,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target_x: -8.5
   target_y: 18.3
+  scale_change_to: 5
 --- !u!4 &61514875 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1046816638211868712, guid: f45ec90df9fb9584992d8e5320c13755, type: 3}
@@ -1147,6 +1148,10 @@ PrefabInstance:
       propertyPath: speed
       value: 5
       objectReference: {fileID: 0}
+    - target: {fileID: 7084205083451281425, guid: c6773991371b41c49878982519aca201, type: 3}
+      propertyPath: detectTag
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 8416789627273718936, guid: c6773991371b41c49878982519aca201, type: 3}
       propertyPath: key
       value: 109
@@ -1299,6 +1304,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target_x: -8.5
   target_y: 28
+  scale_change_to: 5
 --- !u!61 &619729297
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -18185,6 +18191,10 @@ PrefabInstance:
       propertyPath: speed
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 7084205083451281425, guid: c6773991371b41c49878982519aca201, type: 3}
+      propertyPath: detectTag
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 8416789627273718936, guid: c6773991371b41c49878982519aca201, type: 3}
       propertyPath: key
       value: 109
@@ -19762,6 +19772,10 @@ PrefabInstance:
     - target: {fileID: 7084205083451281425, guid: c6773991371b41c49878982519aca201, type: 3}
       propertyPath: speed
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7084205083451281425, guid: c6773991371b41c49878982519aca201, type: 3}
+      propertyPath: detectTag
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 8416789627273718936, guid: c6773991371b41c49878982519aca201, type: 3}
       propertyPath: speed
