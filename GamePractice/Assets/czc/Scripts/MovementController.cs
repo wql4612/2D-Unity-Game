@@ -231,23 +231,27 @@ public class PlayerController : MonoBehaviour
         {
             RaycastHit2D hit = hits[0];
 
-            Vector2 pushOut = hit.normal * 0.05f;
-            rb.position = rb.position + pushOut;
-
-            Rigidbody2D otherRb = hit.collider.attachedRigidbody;
-            if (otherRb != null && otherRb != rb)
+            // 只对 Tag 为 "Ground" 的物体执行弹射逻辑
+            if (hit.collider.CompareTag("Ground"))
             {
-                Vector2 pushDir = rb.velocity.normalized;
-                otherRb.AddForce(pushDir * rb.velocity.magnitude * 0.5f, ForceMode2D.Impulse);
-                rb.velocity *= 0.5f;
-            }
-            else
-            {
-                Vector2 reflectedVelocity = Vector2.Reflect(rb.velocity, hit.normal);
-                rb.velocity = reflectedVelocity * energyLossFactor;
-            }
+                Vector2 pushOut = hit.normal * 0.05f;
+                rb.position = rb.position + pushOut;
 
-            bounceTimer = bounceCooldown;
+                Rigidbody2D otherRb = hit.collider.attachedRigidbody;
+                if (otherRb != null && otherRb != rb)
+                {
+                    Vector2 pushDir = rb.velocity.normalized;
+                    otherRb.AddForce(pushDir * rb.velocity.magnitude * 0.5f, ForceMode2D.Impulse);
+                    rb.velocity *= 0.5f;
+                }
+                else
+                {
+                    Vector2 reflectedVelocity = Vector2.Reflect(rb.velocity, hit.normal);
+                    rb.velocity = reflectedVelocity * energyLossFactor;
+                }
+
+                bounceTimer = bounceCooldown;
+            }
         }
     }
 
@@ -297,4 +301,12 @@ public class PlayerController : MonoBehaviour
             case "Orange": birdInventory[3]++; birdInventory[0]++; break;
         }
     }
+    public void ClearBirdInventory()
+{
+    for (int i = 0; i < birdInventory.Length; i++)
+    {
+        birdInventory[i] = 0;
+    }
+}
+
 }
