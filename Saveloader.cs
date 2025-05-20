@@ -3,12 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System;
 using Newtonsoft.Json;
+using UnityEngine.EventSystems;
 
 public class SaveLoadManager : MonoBehaviour
 {
     // 保存游戏数据到PlayerPrefs (临时方案，实际项目中应该存到数据库)
     public void SaveGame()
     {
+
+        // 清除当前选中对象
+        EventSystem.current.SetSelectedGameObject(null);
+
+
+
         Debug.Log("开始保存游戏...");
         // 1. 序列化所有对象
         Dictionary<string, Dictionary<string, string>> gameData = UniversalSerializer.SerializeAllObjects();
