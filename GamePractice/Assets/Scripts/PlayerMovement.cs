@@ -68,7 +68,7 @@ public class PlayerMovement : MonoBehaviour
 
 
         //ÌøÔ¾
-        if(Input.GetButtonDown("Jump") && (IsGrounded()||isClimbing)&&jumpCount>0)
+        if(Input.GetButtonDown("Jump") &&jumpCount>0)
         {
             jumpCount--;
             jumpRequested = true;
