@@ -38,6 +38,8 @@ public class PlayerLife : MonoBehaviour
         }
     }
 
+    
+
     private void Die()
     {
         rb.bodyType = RigidbodyType2D.Static;

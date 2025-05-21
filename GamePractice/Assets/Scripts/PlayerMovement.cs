@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     private float dirX = 0f;
     public bool jumpRequested;
     private bool isJumping;
+    [SerializeField] private int jumpCount = 2;
     [SerializeField] public bool canJump = true;
     private enum MovementState { idle, running, jumping, falling };
 
@@ -67,9 +68,14 @@ public class PlayerMovement : MonoBehaviour
 
 
         //ÌøÔ¾
-        if(Input.GetButtonDown("Jump") && (IsGrounded()||isClimbing)&&canJump)
+        if(Input.GetButtonDown("Jump") && (IsGrounded()||isClimbing)&&jumpCount>0)
         {
+            jumpCount--;
             jumpRequested = true;
+        }
+        if(IsGrounded())
+        {
+            jumpCount = 1;
         }
 
         UpdateAnimationState();
