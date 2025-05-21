@@ -4,9 +4,12 @@ using TMPro;
 public class DetectWall : MonoBehaviour
 {
     [SerializeField] private GameObject square;
+    [SerializeField] private GameObject triggerObj; // 新增：Trigger对象
     [SerializeField] private KeyCode key = KeyCode.N;
     [SerializeField] public TextMeshPro textMesh;
-    [SerializeField] private bool isStay;
+    [SerializeField] private bool playerInside = false;
+    private bool waitForToggle = false; // 新增等待标志
+
     void Start()
     {
         // 验证按键有效性
@@ -16,32 +19,62 @@ public class DetectWall : MonoBehaviour
             key = KeyCode.N;
         }
         if (textMesh != null) textMesh.text = key.ToString().ToUpper();
-        if(square == null)
+        if (square == null)
         {
             square = transform.Find("moveObj").gameObject;
+        }
+        if (triggerObj == null)
+        {
+            triggerObj = transform.Find("TriggerObj")?.gameObject;
         }
         if (square == null)
         {
             Debug.LogWarning("No square found!");
             return;
         }
+        if (triggerObj == null)
+        {
+            Debug.LogWarning("No triggerObj found!");
+            return;
+        }
+        triggerObj.SetActive(false); // 初始关闭
     }
 
     void Update()
-    {  
-        if(!isStay){
-            if (Input.GetKeyDown(key)) ToggleWallCollider(false);
-            if (Input.GetKeyUp(key)) ToggleWallCollider(true);
+    {
+        if(triggerObj.activeSelf)
+            playerInside = triggerObj.GetComponent<TriggerDetecter>().playerInside;
+
+        if (Input.GetKeyDown(key))
+        {
+            ToggleWallCollider(false);
+        }
+        if (Input.GetKeyUp(key))
+        {
+            if (playerInside)
+            {
+                waitForToggle = true; // 标记等待
+            }
+            else
+            {
+                ToggleWallCollider(true);
+            }
+        }
+        // 检查是否需要延迟Toggle
+        if (waitForToggle && !playerInside)
+        {
+            ToggleWallCollider(true);
+            waitForToggle = false;
         }
     }
+
     private void ToggleWallCollider(bool state)
     {
-        //取消碰撞体
         var collider = square.GetComponent<BoxCollider2D>();
         if (collider)
         {
-            collider.enabled = state;
-            Debug.Log($"Wall {(state ? "enabled" : "disabled")}!");
+            collider.isTrigger = !state; // state==true时恢复物理，isTrigger=false
+            Debug.Log($"Wall collider isTrigger set to {!state}");
         }
         // 修改透明度
         var sr = square.GetComponent<SpriteRenderer>();
@@ -50,6 +83,11 @@ public class DetectWall : MonoBehaviour
             Color c = sr.color;
             c.a = state ? 1f : 0.5f;
             sr.color = c;
+        }
+        // 控制TriggerObj的激活
+        if (triggerObj != null)
+        {
+            triggerObj.SetActive(!state); // 只有wall不可用时启用trigger
         }
     }
 }
