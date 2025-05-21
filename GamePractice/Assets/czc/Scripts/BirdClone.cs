@@ -17,18 +17,20 @@ public class BirdClone : MonoBehaviour
         manager.RegisterClone(this);
     }
 
-    void FixedUpdate()
+void FixedUpdate()
+{
+    if (playerTransform == null) return;
+
+    float dist = Vector2.Distance(transform.position, playerTransform.position);
+
+    // 距离足够近就触发融合，无需全部落地
+    if (dist < fuseDistance)
     {
-        if (playerTransform == null) return;
-
-        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, 0.1f, LayerMask.GetMask("Ground"));
-
-        float dist = Vector2.Distance(transform.position, playerTransform.position);
-        if (dist < fuseDistance && manager.AllClonesGrounded())
-        {
-            manager.FuseAllClones();
-        }
+        manager.RemoveClone(this);  // 通知 manager
+        Destroy(gameObject);
     }
+}
+
 
     public bool IsGrounded() => isGrounded;
 }

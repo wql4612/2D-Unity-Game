@@ -6,6 +6,11 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class PlayerController : MonoBehaviour
 {
+    [Header("UI Arrow Prompt")]
+    [SerializeField] private GameObject arrowPrefab;
+    private GameObject arrowInstance;
+    private Coroutine arrowAnimCoroutine;
+
     private Rigidbody2D rb;
     private SpriteRenderer sprite;
     private Animator anim;
@@ -34,7 +39,7 @@ public class PlayerController : MonoBehaviour
     private float bounceCooldown = 0.05f;
     private float bounceTimer = 0f;
 
-    private int[] birdInventory = new int[4];
+    public int[] birdInventory = new int[4];
 
     private Vector2 dragStartPos;
     private float dirX = 0f;
@@ -76,19 +81,28 @@ public class PlayerController : MonoBehaviour
             HandleRaycastBounce();
             HandleBirdSkills();
 
-            if (rb.velocity.magnitude < stopThreshold)
+            // 手动按下 Jump 键也可退出飞行
+            if (Input.GetButtonDown("Jump"))
+            {
+                ExitSlingshotFlight();
+                rb.velocity = new Vector2(rb.velocity.x, jumpForce);  // 空中跳跃
+            }
+            else if (rb.velocity.magnitude < stopThreshold)
             {
                 ExitSlingshotFlight();
             }
+
 
             UpdateAnimationState();
             return;
         }
 
+
         HandleMovementInput();
         HandleJump();
         UpdateAnimationState();
     }
+
 
     private void HandleMovementInput()
     {
@@ -173,17 +187,20 @@ public class PlayerController : MonoBehaviour
         rb.velocity = Vector2.zero;
         rb.angularVelocity = 0f;
         rb.isKinematic = true;
+        ShowArrow();
+
     }
 
     private void ExitSlingshotMode(Vector2 force)
     {
+        HideArrow();
+
         Time.timeScale = 1f;
         isAiming = false;
         isInSlingshotFlight = true;
         rb.isKinematic = false;
 
-        // 不再禁用碰撞器
-        // coll.enabled = false; // ❌ 禁用会导致 raycast 无法检测
+
 
         rb.AddForce(force, ForceMode2D.Impulse);
         rb.AddTorque(-force.x * 0.05f, ForceMode2D.Impulse);
@@ -193,7 +210,7 @@ public class PlayerController : MonoBehaviour
     private void ExitSlingshotFlight()
     {
         isInSlingshotFlight = false;
-        // coll.enabled = true; // 如果你禁用了要记得恢复（但现在不需要）
+
         rb.velocity = Vector2.zero;
     }
 
@@ -232,7 +249,7 @@ public class PlayerController : MonoBehaviour
             RaycastHit2D hit = hits[0];
 
             // 只对 Tag 为 "Ground" 的物体执行弹射逻辑
-            if (hit.collider.CompareTag("Ground"))
+            if (hit.collider.gameObject.layer == LayerMask.NameToLayer("Ground"))
             {
                 Vector2 pushOut = hit.normal * 0.05f;
                 rb.position = rb.position + pushOut;
@@ -302,11 +319,55 @@ public class PlayerController : MonoBehaviour
         }
     }
     public void ClearBirdInventory()
-{
-    for (int i = 0; i < birdInventory.Length; i++)
     {
-        birdInventory[i] = 0;
+        for (int i = 0; i < birdInventory.Length; i++)
+        {
+            birdInventory[i] = 0;
+        }
     }
-}
+    private void ShowArrow()
+    {
+        if (arrowInstance == null && arrowPrefab != null)
+        {
+            arrowInstance = Instantiate(arrowPrefab, transform.position, Quaternion.identity);
+            arrowInstance.transform.SetParent(transform);  // 跟随玩家
+            arrowInstance.transform.localPosition = new Vector3(0f, 0.2f, 0f);
+         arrowInstance.transform.localScale = Vector3.one * 0.05f;  // 缩小箭头
+            arrowAnimCoroutine = StartCoroutine(PulseArrow(arrowInstance.transform));
+        }
+    }
+
+    private void HideArrow()
+    {
+        if (arrowInstance != null)
+        {
+            if (arrowAnimCoroutine != null)
+                StopCoroutine(arrowAnimCoroutine);
+            Destroy(arrowInstance);
+        }
+    }
+
+    private IEnumerator PulseArrow(Transform arrow)
+    {
+        Vector3 baseScale = arrow.localScale;
+        while (true)
+        {
+            yield return ScaleTo(arrow, baseScale * 1.2f, 0.3f);
+            yield return ScaleTo(arrow, baseScale, 0.3f);
+        }
+    }
+
+    private IEnumerator ScaleTo(Transform target, Vector3 scale, float duration)
+    {
+        Vector3 start = target.localScale;
+        float t = 0f;
+        while (t < duration)
+        {
+            t += Time.unscaledDeltaTime;  // 注意弹弓模式是 Time.timeScale=0，必须用 unscaledTime
+            target.localScale = Vector3.Lerp(start, scale, t / duration);
+            yield return null;
+        }
+        target.localScale = scale;
+    }
 
 }

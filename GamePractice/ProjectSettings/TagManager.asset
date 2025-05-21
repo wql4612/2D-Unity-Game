@@ -12,6 +12,7 @@ TagManager:
   - Glass
   - Wood
   - Stone
+  - CheckPoint
   layers:
   - Default
   - TransparentFX

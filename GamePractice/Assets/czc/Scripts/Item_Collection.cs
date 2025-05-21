@@ -13,10 +13,16 @@ public class Item_Collection : MonoBehaviour
 
     void Start()
     {
+        itemCounts =GetComponent<PlayerController>().birdInventory;
         playerController = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
         UpdateItemText();
     }
 
+    void Update()
+    {
+        // 这里可以添加其他更新逻辑
+        UpdateItemText();
+    }
     private void OnTriggerEnter2D(Collider2D collision)
     {
         Debug.Log($"Item collected: {collision.gameObject.name}");
@@ -40,11 +46,11 @@ public class Item_Collection : MonoBehaviour
 
     private void CollectItem(GameObject item, int index, string itemName)
     {
-        itemCounts[index]++;
+
         playerController.AddItem(itemName);
         UpdateItemText();
 
-        StartCoroutine(HandleItemRespawn(item, 10f));
+        StartCoroutine(HandleItemRespawn(item, 6f));
     }
 
     private IEnumerator HandleItemRespawn(GameObject item, float delay)
@@ -77,4 +83,6 @@ public class Item_Collection : MonoBehaviour
     {
         itemText.text = $"Cherry: {itemCounts[0]} | Banana: {itemCounts[1]} | Kiwi: {itemCounts[2]} | Orange: {itemCounts[3]}";
     }
+
+
 }

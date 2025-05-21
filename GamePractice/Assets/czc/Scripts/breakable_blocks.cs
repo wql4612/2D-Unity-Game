@@ -15,11 +15,8 @@ public class BreakableBlock2D : MonoBehaviour
     public float maxBreakVelocity = 10f;
 
     [Header("状态贴图")]
-    public Sprite crackedSprite;    // 木头、石头：第一阶段
-    public Sprite crackedSprite2;   // 石头：第二阶段
-
-    [Header("破坏反馈")]
-    public GameObject destroyEffectPrefab;
+    public Sprite crackedSprite;
+    public Sprite crackedSprite2;
 
     [HideInInspector] public bool isDestroyed = false;
 
@@ -30,7 +27,10 @@ public class BreakableBlock2D : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Rigidbody2D rb;
 
-  void Start()
+    // 缓存粒子效果
+    private GameObject destructionEffect;
+
+    void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
@@ -40,15 +40,9 @@ public class BreakableBlock2D : MonoBehaviour
         string tagName = gameObject.tag;
         switch (tagName)
         {
-            case "Glass":
-                blockType = BlockType.Glass;
-                break;
-            case "Wood":
-                blockType = BlockType.Wood;
-                break;
-            case "Stone":
-                blockType = BlockType.Stone;
-                break;
+            case "Glass": blockType = BlockType.Glass; break;
+            case "Wood": blockType = BlockType.Wood; break;
+            case "Stone": blockType = BlockType.Stone; break;
             default:
                 Debug.LogWarning($"未知材质标签：{tagName}，默认按石头处理");
                 blockType = BlockType.Stone;
@@ -62,7 +56,7 @@ public class BreakableBlock2D : MonoBehaviour
             {
                 case BlockType.Glass:
                     minBreakVelocity = 3f;
-                    maxBreakVelocity = 3.1f; // 其实直接摧毁用不到 max
+                    maxBreakVelocity = 3.1f;
                     break;
                 case BlockType.Wood:
                     minBreakVelocity = 5f;
@@ -74,7 +68,17 @@ public class BreakableBlock2D : MonoBehaviour
                     break;
             }
         }
+
+        // 初始化对应粒子效果
+        destructionEffect = blockType switch
+        {
+            BlockType.Glass => CreateDestructionEffect("BlueGlassEffect", new Color(0.3f, 0.7f, 1f)),
+            BlockType.Wood => CreateDestructionEffect("WoodEffect", new Color(0.55f, 0.27f, 0.07f)),
+            BlockType.Stone => CreateDestructionEffect("StoneEffect", new Color(0.5f, 0.5f, 0.5f)),
+            _ => null
+        };
     }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (!collision.gameObject.CompareTag("Player")) return;
@@ -86,7 +90,34 @@ public class BreakableBlock2D : MonoBehaviour
         float impactStrength = Vector2.Dot(playerRb.velocity, -contactNormal);
         impactStrength = Mathf.Abs(impactStrength);
 
+        bool isYellowDash = false;
+        BirdSkills skills = collision.gameObject.GetComponent<BirdSkills>();
+        if (skills != null && skills.isDashingThrough)
+        {
+            isYellowDash = true;
+            maxBreakVelocity*=0.5f;
+        }
+
+        if (isYellowDash && CanFullyBreak(impactStrength))
+        {
+            FullyDestroy();
+            playerRb.velocity = playerRb.velocity * 0.95f;
+            return;
+        }
+
         ApplyImpactDamage(impactStrength);
+
+        if (isYellowDash)
+        {
+            float slowDownFactor = blockType switch
+            {
+                BlockType.Glass => 0.2f,
+                BlockType.Wood => 0.3f,
+                BlockType.Stone => 0.8f,
+                _ => 0.5f
+            };
+            playerRb.velocity *= slowDownFactor;
+        }
     }
 
     public void ApplyExternalDamage(float damage)
@@ -102,9 +133,7 @@ public class BreakableBlock2D : MonoBehaviour
         {
             case BlockType.Glass:
                 if (impact >= minBreakVelocity)
-                {
                     FullyDestroy();
-                }
                 break;
 
             case BlockType.Wood:
@@ -125,7 +154,7 @@ public class BreakableBlock2D : MonoBehaviour
                     spriteRenderer.sprite = crackedSprite;
                     crackLevel = 1;
                 }
-                else if (crackLevel == 1 && accumulatedDamage >= (maxBreakVelocity * 0.75f) && crackedSprite2 != null)
+                else if (crackLevel == 1 && accumulatedDamage >= maxBreakVelocity * 0.75f && crackedSprite2 != null)
                 {
                     spriteRenderer.sprite = crackedSprite2;
                     crackLevel = 2;
@@ -141,13 +170,62 @@ public class BreakableBlock2D : MonoBehaviour
     private void FullyDestroy()
     {
         if (isDestroyed) return;
+
         isDestroyed = true;
 
-        if (destroyEffectPrefab != null)
+        if (destructionEffect != null)
         {
-            Instantiate(destroyEffectPrefab, transform.position, Quaternion.identity);
+            GameObject instance = Instantiate(destructionEffect, transform.position, Quaternion.identity);
+            Destroy(instance, 2f);
         }
 
-        gameObject.SetActive(false); // 或 Destroy(gameObject);
+        gameObject.SetActive(false);
+    }
+
+    private bool CanFullyBreak(float impact)
+    {
+        float projectedDamage = accumulatedDamage + impact;
+
+        return blockType switch
+        {
+            BlockType.Glass => impact >= minBreakVelocity,
+            BlockType.Wood => projectedDamage >= maxBreakVelocity,
+            BlockType.Stone => projectedDamage >= maxBreakVelocity,
+            _ => false
+        };
+    }
+
+    private GameObject CreateDestructionEffect(string name, Color startColor)
+    {
+        GameObject go = new GameObject(name);
+        var ps = go.AddComponent<ParticleSystem>();
+        var main = ps.main;
+
+        main.duration = 0.5f;
+        main.startLifetime = 0.4f;
+        main.startSpeed = new ParticleSystem.MinMaxCurve(2f, 4f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.1f, 0.2f);
+        main.startColor = startColor;
+        main.gravityModifier = 0.3f;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.maxParticles = 50;
+        main.loop = false;
+
+        var emission = ps.emission;
+        emission.rateOverTime = 0;
+        emission.SetBursts(new[] {
+            new ParticleSystem.Burst(0f, 15, 25)
+        });
+
+        var shape = ps.shape;
+        shape.shapeType = ParticleSystemShapeType.Sphere;
+        shape.radius = 0.1f;
+
+        var renderer = go.GetComponent<ParticleSystemRenderer>();
+        renderer.material = new Material(Shader.Find("Particles/Standard Unlit"));
+        renderer.material.color = startColor;
+        renderer.renderMode = ParticleSystemRenderMode.Billboard;
+
+        return go;
     }
 }

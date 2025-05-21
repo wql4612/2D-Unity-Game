@@ -23,13 +23,21 @@ public class BirdSkills : MonoBehaviour
             originalColliderOffset = box.offset;
         }
     }
-
-    // �����ܣ���ǰ�ٶȼӱ�
+    public bool isDashingThrough = false;
     public void ActivateYellowSkill()
     {
         Vector2 currentVelocity = rb.velocity;
-        rb.velocity = currentVelocity * 2f;
-        Debug.Log("Yellow skill activated: Speed doubled.");
+        rb.velocity = currentVelocity * 4f;
+
+        isDashingThrough = true;
+        StartCoroutine(EndDashAfterSeconds(5f));  // 冲刺持续时间
+        Debug.Log("Yellow skill activated: Speed boosted & dash mode enabled.");
+    }
+
+    private IEnumerator EndDashAfterSeconds(float time)
+    {
+        yield return new WaitForSeconds(time);
+        isDashingThrough = false;
     }
 
     // �������ܷ���Ԥ��
@@ -51,13 +59,27 @@ public class BirdSkills : MonoBehaviour
         // 计算分裂方向（垂直于当前速度）
         Vector2 perpendicular = new Vector2(-currentVelocity.y, currentVelocity.x).normalized;
         float offset = 1f;
+        LayerMask wallMask = LayerMask.GetMask("Ground");  // 假设墙体在 Ground 层
+        float checkRadius = 0.3f;
 
-        Vector3 position1 = transform.position + (Vector3)(perpendicular * offset);
-        Vector3 position2 = transform.position - (Vector3)(perpendicular * offset);
+        // 计算候选位置
+        Vector3 rawPos1 = transform.position + (Vector3)(perpendicular * offset);
+        Vector3 rawPos2 = transform.position - (Vector3)(perpendicular * offset);
+
+        // 修正碰墙
+        if (Physics2D.OverlapCircle(rawPos1, checkRadius, wallMask))
+        {
+            rawPos1 = transform.position + (Vector3)(perpendicular * (offset - 0.5f));
+        }
+        if (Physics2D.OverlapCircle(rawPos2, checkRadius, wallMask))
+        {
+            rawPos2 = transform.position - (Vector3)(perpendicular * (offset - 0.5f));
+        }
+
 
         // 克隆两个分身
-        GameObject clone1 = Instantiate(gameObject, position1, Quaternion.identity);
-        GameObject clone2 = Instantiate(gameObject, position2, Quaternion.identity);
+        GameObject clone1 = Instantiate(gameObject, rawPos1, Quaternion.identity);
+        GameObject clone2 = Instantiate(gameObject, rawPos2, Quaternion.identity);
 
         // 设置缩放
         clone1.transform.localScale = originalScale * cloneScale;
@@ -111,12 +133,15 @@ public class BirdSkills : MonoBehaviour
         if (explosionPrefab != null)
         {
             GameObject explosion = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            explosion.transform.localScale *= 2f;
+
             Destroy(explosion, 1f);
         }
 
+
         // 爆炸范围
-        float explosionRadius = 2f;
-        float explosionForce = 8f;
+        float explosionRadius = 4f;
+        float explosionForce = 20f;
 
         // 斜向上的方向（右上）
         Vector2 explosionDirection = new Vector2(1f, 1.5f).normalized;
@@ -134,15 +159,27 @@ public class BirdSkills : MonoBehaviour
             // 如果带刚体则推动
             if (hit.attachedRigidbody != null && hit.attachedRigidbody.bodyType == RigidbodyType2D.Dynamic)
             {
-                hit.attachedRigidbody.AddForce(explosionDirection * explosionForce, ForceMode2D.Impulse);
+                Vector2 direction = (hit.transform.position - transform.position).normalized;
+
+                // 加点向上的分量，防止全平推
+                Vector2 upwardBias = new Vector2(0f, 0.5f);
+                Vector2 forceDir = (direction + upwardBias).normalized;
+
+                hit.attachedRigidbody.AddForce(forceDir * explosionForce, ForceMode2D.Impulse);
             }
         }
+
         // 自己向上飞一点（反弹）
         Rigidbody2D myRb = GetComponent<Rigidbody2D>();
         if (myRb != null)
         {
-            myRb.velocity = new Vector2(myRb.velocity.x, 10f);
+            Vector2 currentDir = myRb.velocity.normalized;
+            Vector2 upwardBias = new Vector2(0f, 0.5f);
+            Vector2 bounceDir = (currentDir + upwardBias).normalized;
+
+            myRb.velocity = bounceDir * 10f; // 或乘以原速度大小，或一个固定值
         }
+
     }
 
 

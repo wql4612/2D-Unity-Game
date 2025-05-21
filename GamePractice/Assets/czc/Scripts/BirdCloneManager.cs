@@ -28,4 +28,14 @@ public class BirdCloneManager : MonoBehaviour
         }
         clones.Clear();
     }
+    public void RemoveClone(BirdClone clone)
+{
+    clones.Remove(clone);
+
+    if (clones.Count == 0)
+    {
+        // 所有分身都消失了
+        FuseAllClones();
+    }
+}
 }
