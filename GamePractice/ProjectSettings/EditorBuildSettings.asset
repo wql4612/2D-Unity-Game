@@ -12,14 +12,17 @@ EditorBuildSettings:
     path: Assets/Scenes/Level1.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
   - enabled: 1
-    path: Assets/Scenes/Level2.unity
-    guid: 13fa0d226ba6d48479474bb055ed2238
-  - enabled: 1
     path: Assets/Scenes/LevelHJ-1.unity
     guid: dd59345499bf47a499499a2dd08f8295
   - enabled: 1
     path: Assets/Scenes/LevelHJ-2.unity
     guid: 5857955beb40ac54fa4db2fb16d771dd
+  - enabled: 1
+    path: "Assets/czc/\u6124\u6012\u7684\u5C0F\u9E1F.unity"
+    guid: 228dcac225f5fd548ac6f68d8bfd83aa
+  - enabled: 1
+    path: Assets/Scenes/DashMode.unity
+    guid: 19e78dab054971c48957ae7e4bee6959
   - enabled: 1
     path: Assets/Scenes/EndMenu.unity
     guid: 434b45d59d8b45849a79e6e1e60703ac

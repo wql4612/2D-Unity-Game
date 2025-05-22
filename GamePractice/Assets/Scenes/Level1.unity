@@ -598,10 +598,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1107120049}
-  fixedPosition: {x: 0, y: 0, z: 0}
-  followPlayer_x: 1
-  followPlayer_y: 1
-  smoothTime: 0.2
 --- !u!1 &530069989
 GameObject:
   m_ObjectHideFlags: 0
@@ -3266,7 +3262,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rb: {fileID: 0}
   jumpRequested: 0
-  jumpCount: 2
   canJump: 1
   moveSpeed: 7
   jumpForce: 7
@@ -6217,7 +6212,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4358559893872620710, guid: a6b27a01f9f8f1c4daefcb3d50020e35, type: 3}
       propertyPath: m_Name
-      value: Trampolinewql
+      value: Trampoline
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
