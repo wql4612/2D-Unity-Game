@@ -4,106 +4,112 @@ using System.IO;
 using System;
 using Newtonsoft.Json;
 using UnityEngine.EventSystems;
-using System.Xml;
+using MySql.Data.MySqlClient;
 
 public class SaveLoadManager : MonoBehaviour
 {
-    // 保存游戏数据到PlayerPrefs (临时方案，实际项目中应该存到数据库)
+    public string connectionString = string.Format("server={0};port={1};database={2};user={3};password={4};",
+        "localhost", 3306, "demo", "root", "123456");
+
+    private void Start()
+    {
+        EnsureTableExists();
+    }
+
+    private void EnsureTableExists()
+    {
+        try
+        {
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+
+                string createTableQuery = @"
+                CREATE TABLE IF NOT EXISTS game_saves (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    save_name VARCHAR(255) NOT NULL,
+                    json_data LONGTEXT NOT NULL,
+                    created_at DATETIME NOT NULL,
+                    last_updated DATETIME NOT NULL,
+                    UNIQUE KEY (save_name)
+                )";
+
+                using (MySqlCommand cmd = new MySqlCommand(createTableQuery, connection))
+                {
+                    cmd.ExecuteNonQuery();
+                    Debug.Log("确保game_saves表存在成功");
+                }
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"创建表失败: {e.Message}");
+        }
+    }
+
     public void SaveGame()
     {
-
         // 清除当前选中对象
         EventSystem.current.SetSelectedGameObject(null);
-
-
 
         Debug.Log("开始保存游戏...");
         // 1. 序列化所有对象
         Dictionary<string, Dictionary<string, string>> gameData = UniversalSerializer.SerializeAllObjects();
-        // 详细检查 gameData
+
         if (gameData == null)
         {
             Debug.LogError("gameData 是 null!");
+            return;
         }
         else if (gameData.Count == 0)
         {
             Debug.LogWarning("gameData 是空的字典！");
-
-            // 打印调用堆栈以帮助调试
             Debug.Log("调用堆栈:\n" + Environment.StackTrace);
-        }
-        else
-        {
-            Debug.Log($"序列化数据: {gameData.Count} 个对象");
-
-            // 打印前几个条目（避免日志过大）
-            int maxToShow = 5;
-            int shown = 0;
-            foreach (var entry in gameData)
-            {
-                Debug.Log($"Key: {entry.Key}, ValueCount: {entry.Value?.Count ?? 0}");
-                shown++;
-                if (shown >= maxToShow) break;
-            }
+            return;
         }
 
+        Debug.Log($"序列化数据: {gameData.Count} 个对象");
+        string jsonData = JsonConvert.SerializeObject(gameData, Formatting.Indented);
+        Debug.Log($"序列化JSON: {jsonData}");
 
+        // 保存到数据库
+        SaveToDatabase(jsonData, "default_save");
 
-        string jsonData = Newtonsoft.Json.JsonConvert.SerializeObject(gameData, Newtonsoft.Json.Formatting.Indented);
-        Debug.Log($"序列化JSON: {jsonData}"); // 现在会正确输出
-
-
-        //// 2. 转换为JSON字符串
-        //var wrapper = new SerializationWrapper(gameData);
-        //Debug.Log($"Wrapper 数据量: {wrapper.data?.Count ?? 0}");
-        //// 3. 序列化为 JSON
-        //string jsonData = JsonUtility.ToJson(wrapper, prettyPrint: true);
-        //Debug.Log($"序列化JSON: {jsonData}");  // 现在应该能正确输出
-        //// 3. 保存到PlayerPrefs (实际项目中应该存到数据库)
-        //PlayerPrefs.SetString("SavedGame", jsonData);
-        //PlayerPrefs.Save();
-
+        // 同时保留本地文件保存（可选）
         string path = Application.persistentDataPath + "/savefile.json";
-        Debug.Log($"保存路径: {path}");
         SaveToJsonFile(jsonData, path);
-        Debug.Log("游戏已保存！");
     }
 
-    // 从PlayerPrefs加载游戏数据
     public void LoadGame()
     {
+        // 优先从数据库加载
+        string jsonData = LoadFromDatabase("default_save");
+
+        if (string.IsNullOrEmpty(jsonData))
+        {
+            Debug.Log("尝试从本地文件加载...");
+            // 如果数据库没有，尝试从文件加载
+            string path = Path.Combine(Application.persistentDataPath, "savefile.json");
+            if (File.Exists(path))
+            {
+                jsonData = File.ReadAllText(path);
+            }
+            else
+            {
+                Debug.LogWarning("没有找到任何存档！");
+                return;
+            }
+        }
+
         try
         {
-            // 1. 构建路径（跨平台兼容写法）
-            string path = Path.Combine(Application.persistentDataPath, "savefile.json");
-            Debug.Log($"尝试从路径加载: {path}");
-
-            // 2. 检查文件是否存在
-            if (!File.Exists(path))
-            {
-                Debug.LogWarning("存档文件不存在，路径: " + path);
-                return;
-            }
-
-            // 3. 读取文件内容
-            string jsonData = File.ReadAllText(path);
-            if (string.IsNullOrEmpty(jsonData))
-            {
-                Debug.LogError("存档文件为空！");
-                return;
-            }
-
-            // 4. 反序列化（使用 Newtonsoft.Json）
             var gameData = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(jsonData);
-
-            // 5. 验证数据
             if (gameData == null || gameData.Count == 0)
             {
                 Debug.LogWarning("反序列化数据为空！");
                 return;
             }
 
-            // 6. 恢复游戏状态
             UniversalDeserializer.DeserializeAllObjects(gameData);
             Debug.Log("游戏加载成功！加载对象数量: " + gameData.Count);
         }
@@ -113,15 +119,78 @@ public class SaveLoadManager : MonoBehaviour
         }
     }
 
-    // 新增方法：保存到JSON文件
+    private void SaveToDatabase(string jsonData, string saveName = "default")
+    {
+        try
+        {
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+
+                // 使用REPLACE INTO语句简化操作（会自动处理插入或更新）
+                string query = @"
+                REPLACE INTO game_saves (save_name, json_data, created_at, last_updated) 
+                VALUES (@saveName, @jsonData, NOW(), NOW())";
+
+                using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                {
+                    cmd.Parameters.AddWithValue("@saveName", saveName);
+                    cmd.Parameters.AddWithValue("@jsonData", jsonData);
+                    cmd.ExecuteNonQuery();
+                }
+
+                Debug.Log($"游戏已保存到数据库，存档名称: {saveName}");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"保存到数据库失败: {e.Message}");
+        }
+    }
+
+    private string LoadFromDatabase(string saveName = "default")
+    {
+        try
+        {
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+
+                string query = "SELECT json_data FROM game_saves WHERE save_name = @saveName";
+                using (MySqlCommand cmd = new MySqlCommand(query, connection))
+                {
+                    cmd.Parameters.AddWithValue("@saveName", saveName);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string jsonData = reader["json_data"].ToString();
+                            Debug.Log($"从数据库加载存档成功: {saveName}");
+                            return jsonData;
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"未找到存档: {saveName}");
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"从数据库加载失败: {e.Message}");
+            return null;
+        }
+    }
+
+    // 保留本地文件保存方法（可选）
     private void SaveToJsonFile(string jsonData, string customPath = null)
     {
-        // 如果没有指定路径，使用默认路径
         string filePath = customPath ?? Path.Combine(Application.persistentDataPath, "SavedGame.json");
 
         try
         {
-            // 写入文件
             File.WriteAllText(filePath, jsonData);
             Debug.Log($"游戏已保存到文件: {filePath}");
         }
@@ -130,66 +199,4 @@ public class SaveLoadManager : MonoBehaviour
             Debug.LogError($"保存文件失败: {e.Message}");
         }
     }
-
-    // 文件加载游戏数据
-    public void LoadGameFromJson(bool fromFile = true, string filePath = null)
-    {
-        string jsonData;
-
-        if (fromFile)
-        {
-            // 从文件加载
-            string path = filePath ?? Path.Combine(Application.persistentDataPath, "SavedGame.json");
-
-            if (!File.Exists(path))
-            {
-                Debug.LogWarning($"存档文件不存在: {path}");
-                return;
-            }
-
-            try
-            {
-                jsonData = File.ReadAllText(path);
-                Debug.Log($"从文件加载存档: {path}");
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"读取存档文件失败: {e.Message}");
-                return;
-            }
-        }
-        else
-        {
-            // 从PlayerPrefs加载
-            if (!PlayerPrefs.HasKey("SavedGame"))
-            {
-                Debug.LogWarning("没有找到PlayerPrefs存档！");
-                return;
-            }
-
-            jsonData = PlayerPrefs.GetString("SavedGame");
-            Debug.Log("从PlayerPrefs加载存档");
-        }
-
-        // 反序列化
-        SerializationWrapper wrapper = JsonUtility.FromJson<SerializationWrapper>(jsonData);
-
-        // 恢复游戏状态
-        UniversalDeserializer.DeserializeAllObjects(wrapper.data);
-
-        Debug.Log("游戏已加载！");
-    }
-
-    // 辅助类，用于包装Dictionary以便JsonUtility能正确序列化
-    [System.Serializable]
-    private class SerializationWrapper
-    {
-        public Dictionary<string, Dictionary<string, string>> data;
-
-        public SerializationWrapper(Dictionary<string, Dictionary<string, string>> data)
-        {
-            this.data = data;
-        }
-    }
-
 }
