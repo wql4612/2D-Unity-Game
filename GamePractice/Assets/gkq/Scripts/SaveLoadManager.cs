@@ -13,7 +13,7 @@ public class SaveLoadManager : MonoBehaviour
 
     private void Start()
     {
-        EnsureTableExists();
+        //EnsureTableExists();
     }
 
     private void EnsureTableExists()
